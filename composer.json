@@ -1,0 +1,16 @@
+{
+    "name": "ymyitconsulting/tramo-framework",
+    "description": "Tramo Framework, a lightweight PHP framework which aims to make coding simpler.",
+    "authors": [
+        {
+            "name": "ming.teoh",
+            "email": "ming@ymyitconsulting.com"
+        }
+    ],
+    "config": {
+        "vendor-dir": "vendors/"
+    },
+    "require": {
+        "firephp/firephp-core": "dev-master"
+    }
+}

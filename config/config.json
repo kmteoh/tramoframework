@@ -1,0 +1,36 @@
+{
+    "environment": "development",
+    "displayError": false,
+    "template": "default",
+    "cache1": {
+        "type":"query",
+        "storage": "file",
+        "path": "../.cache/",
+        "timeout": 60
+    },
+    "environments": {
+        "development": {
+            "displayError": true,
+            "logger": {
+                "enabled": true,
+                "appender": "screen",
+                "template": "<pre>%s</pre>",
+                "level": "WARN"
+            }
+        },
+		"integration": {},
+		"staging": {},
+		"production": {}
+    },
+    "logger": {
+        "enabled": true,
+        "appender": "file",
+        "format": "%file#%line\t%date\t%message",
+        "level": "WARN"
+    },
+    "extensions": [
+        "tramoTestFramework"
+    ],
+    "import": [
+    ]
+}

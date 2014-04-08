@@ -1,0 +1,9 @@
+{
+    "/test": {"controller": "test","action":"unitTest"},
+    "/test/unit": {"controller": "test","action":"unitTest"},
+    "/test/unit/$case": {"controller": "test","action":"unitTest"},
+    "/test/unit/$case/$unit": {"controller": "test","action":"unitTest"},
+    "/test/integration": {"controller": "test","action":"integrationTest"},
+    "/test/integration/$case": {"controller": "test","action":"integrationTest"},
+    "/test/integration/$case/$unit": {"controller": "test","action":"integrationTest"}
+}

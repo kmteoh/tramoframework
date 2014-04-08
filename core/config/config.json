@@ -1,0 +1,20 @@
+{
+    "environment": "development",
+    "environments": {
+        "development": {},
+		"integration": {},
+		"staging": {},
+		"production": {}
+    },
+    "mimeTypes": {
+        "csv" : "text/csv",
+        "json" : "application/json",
+        "xml" : "application/xml",
+        "html" : "text/html"
+    },
+    "handlers": {
+        "cache":"cache",
+        "param":"param",
+        "logger":"logger"
+    }
+}

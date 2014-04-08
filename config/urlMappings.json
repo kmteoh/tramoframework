@@ -1,0 +1,8 @@
+{
+	"500": {"view":"/error/error"},
+    "/": {"controller": "tf", "action": "index"},
+    "/home": {"controller": "tf", "action": "index"},
+    "/$controller/$action": {},
+    "/$controller/$action/$id": {},
+    "LayoutException": {"view":"error/layoutException"}
+}

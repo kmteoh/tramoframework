@@ -1,0 +1,14 @@
+{
+    "dbEngine": "sqlite",
+    "dbFile": "../db/tf.sqlite",
+    "dbHost": "",
+    "dbDsn": "",
+    "profiling": true,
+    "environments": {
+        "development": {
+            "dbName": "",
+            "dbUser": "sqlite",
+            "dbPassword": "sqlite"
+        }
+    }
+}

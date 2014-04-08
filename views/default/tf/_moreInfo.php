@@ -1,0 +1,10 @@
+        <h2>$ip</h2>
+		<?predump($ip)?>
+        <h2>$data</h2>
+		<?predump($data)?>
+        <h2>$params</h2>
+		<?predump($params)?>
+        <h2>$model</h2>
+		<?predump($model)?>
+        <h2>$config</h2>
+		<?predump(config::getInstance())?>
