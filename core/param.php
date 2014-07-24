@@ -36,7 +36,7 @@ class param {
         }
         $get = $_GET;
         unset($get['page']);
-        unset($get['_q']);
+        unset($get['path']);
         $this->_params['requestMethod'] = !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'cli';
         $this->_params['query'] = !empty($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : null;
         $this->_params['host'] = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : null;

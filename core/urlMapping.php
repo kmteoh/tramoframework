@@ -10,16 +10,16 @@ class urlMapping {
 
         $mimeTypes = config::get('mimeTypes');
         $extentions = array_keys($mimeTypes);
-        $pathinfo = pathinfo($params->_q);
+        $pathinfo = pathinfo($params->path);
         if(!empty($pathinfo['extension']) && in_array($pathinfo['extension'],$extentions)) {
             $params->format = $pathinfo['extension'];
-            $params->_q = str_replace($pathinfo['basename'],$pathinfo['filename'],$params->_q);
+            $params->path = str_replace($pathinfo['basename'],$pathinfo['filename'],$params->path);
         }
 
-        if(substr($params->_q,-1) == '/') {
-            $params->_q = substr($params->_q,0,-1);
+        if(substr($params->path,-1) == '/') {
+            $params->path = substr($params->path,0,-1);
         }
-        $urlParts = $params->_q ? explode('/',$params->_q) : array();
+        $urlParts = $params->path ? explode('/',$params->path) : array();
 
         if(empty($urlParts))
             $mapped = $urls['/'];
@@ -70,7 +70,7 @@ class urlMapping {
         }
 
         if(empty($mapped)) {
-            throw new UrlMappingErrorException("Can't match pattern for \"/{$params->_q}\"");
+            throw new UrlMappingErrorException("Can't match pattern for \"/{$params->path}\"");
         }
 
         foreach($mapped as $key => $value) {
