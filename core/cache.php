@@ -4,10 +4,10 @@ class cache {
     private static $instance;
 
     private $_type = 'query';  //query | page; can be use as combination using plus(+) sign, e.g. query+page
-    private $_storage = 'file';  //file | db; db=sqlite
+    private $_storage = 'file';  //file | db | apc; db=sqlite
     private $_path = "../.cache/";
     private $_autoCleanup = false;
-    private $_filename = 'cache.sqlite'; //db only
+    private $_dbFile = 'cache.sqlite'; //db only
     private $_timeout = 0;
 
     private function __construct($config=null) {
@@ -17,7 +17,7 @@ class cache {
             }
         }
         $this->_storage = ucfirst(strtolower($this->_storage));
-        $this->{"_setup{$this->_storage}"}();
+        call_user_func(array($this,"_setup{$this->_storage}"));
     }
 
     public static function getInstance($config=null) {
@@ -66,15 +66,45 @@ class cache {
         @mkdir($this->_path);
     }
 
-    private function _setupDb() {
-        $this->_setupFile();
-    }
-
     private function _clearFile() {
         array_map('unlink', glob("{$this->_path}/*"));
     }
 
+    private function _setupDb() {
+        $this->_setupFile();
+    }
+
     private function _clearDb() {
         //TODO
+    }
+
+    private function _getDb($label) {
+        //TODO
+    }
+
+    private function _setDb($label,$data) {
+        //TODO
+    }
+
+    private function _setupApc() {
+        if(!function_exists('apc_fetch')) {
+            throw new BadFunctionCallException('APC not supported');
+        }
+    }
+
+    private function _clearApc() {
+        //TODO
+    }
+
+    private function _getApc($label) {
+        return apc_fetch($label);
+    }
+
+    private function _hasApc($label) {
+        return apc_exists($label);
+    }
+
+    private function _setApc($label,$data) {
+        return apc_store($label, $data,$this->_timeout);
     }
 }
