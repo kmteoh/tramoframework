@@ -6,9 +6,11 @@
     "profiling": true,
     "environments": {
         "development": {
-            "dbName": "",
-            "dbUser": "sqlite",
-            "dbPassword": "sqlite"
+            "dataSource": {
+                "dbName": "",
+                "dbUser": "sqlite",
+                "dbPassword": "sqlite"
+            }
         }
     }
 }
