@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @author Ming Teoh
+ * @copyright 2013
+ * @name Tramo Framework
+ *
+ * @license http://opensource.org/licenses/MIT
+ */
+
 class mailService extends service {
     public function simpleMail($to,$subject,$body,$from=null,$isHtml=false,$bccAutomated=false,$cc=null,$bcc=null,$highPriority=false) {
         $runtimeConfing = config::getInstance();

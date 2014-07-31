@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * @author Ming Teoh
+ * @copyright 2013
+ * @name Tramo Framework
+ *
+ * @license http://opensource.org/licenses/MIT
+ */
+
 $start = microSeconds();
 error_reporting(0);
 ini_set('display_errors',false);
@@ -39,25 +48,25 @@ try {
         throw new ActionNotFoundException();
     }
 
-    //determine controller and action
-    $controllerName = $controller . 'Controller';
-    if (!class_exists($controllerName)) {
-        throw new ControllerNotFoundException("`$controller` controller not exists!");
-    }
-    if (!method_exists($controllerName, $action)) {
-        throw new ActionNotFoundException("`$action` action in `$controller` controller not exists!");
-    }
-
-    //load filters and run 'before' filters
     $filters = filter::getFilters();
-    for($i=0;$i<count($filters);$i++) {
-        $filters[$i]->before($controller,$action);
-    }
-
-    //action
     try {
+        //determine controller and action
+        $controllerName = $controller . 'Controller';
+        if (!class_exists($controllerName)) {
+            throw new ControllerNotFoundException("`$controller` controller not exists!");
+        }
+        if (!method_exists($controllerName, $action)) {
+            throw new ActionNotFoundException("`$action` action in `$controller` controller not exists!");
+        }
+
+        //load filters and run 'before' filters
+        for($i=0;$i<count($filters);$i++) {
+            $filters[$i]->before($controller,$action);
+        }
+
+        //action
         $controllerObj = new $controllerName();
-        $model =  call_user_func(array($controllerObj,$action));
+        $model = call_user_func(array($controllerObj,$action));
     } catch(Exception $e) {
         //this can be any kind of exceptions which was potentially properly handled
         $ePage = urlMapping::exceptionPage(get_class($e));
@@ -87,7 +96,7 @@ try {
 
         $fx = $model['format'] . "_encode";
         $headers = array();
-        if (!function_exists($fx) && empty($model['download'])) {
+        if (!function_exists($fx)) {
             throw new BadFunctionCallException("$fx() not defined");
         }
         $headers[] = "Content-type: " . $runtimeConfig->mimeTypes[$model['format']];
@@ -95,30 +104,27 @@ try {
             $headers[] = 'Content-Disposition: attachment; filename="' . $model['filename'] . '.' . $model['format'] . '"';
         }
         
+        $xsl = !empty($model['xsl']) ? $model['xsl'] : null;
+
         customHeaders($headers);
-        if(!empty($model['download'])) {
-            $body = file_get_contents($model['download']);
-        } else {
-            $xsl = !empty($model['xsl']) ? $model['xsl'] : null;
-
-            //so that stream output does not content these elements
-            $data = $model;
-            unset($data['xsl']);
-            unset($data['format']);
-            unset($data['filename']);
-            unset($data['params']);
-            if ($model['format'] == 'csv') {
-                $data = array_shift(array_values($data));
-            }
-
-            ob_start();
-            if(!empty($xsl)) {
-                $body = $fx($data,null,null,$xsl);
-            } else {
-                $body = $fx($data);
-            }
-            ob_end_clean();
+        
+        //so that stream output does not content these elements
+        $data = $model;
+        unset($data['xsl']);
+        unset($data['format']);
+        unset($data['filename']);
+        unset($data['params']);
+        if ($model['format'] == 'csv') {
+            $data = array_shift(array_values($data));
         }
+
+        ob_start();
+        if(!empty($xsl)) {
+            $body = $fx($data,null,null,$xsl);
+        } else {
+            $body = $fx($data);
+        }
+        ob_end_clean();
     }
     //if goto is specified, it is a redirect
     else if (!empty($model['goto'])) {

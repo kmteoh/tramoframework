@@ -1,5 +1,15 @@
 <?php
+
+/**
+ * @author Ming Teoh
+ * @copyright 2013
+ * @name Tramo Framework
+ *
+ * @license http://opensource.org/licenses/MIT
+ */
+
 session_start();
+ob_start("ob_gzhandler");
 
 define('DS',DIRECTORY_SEPARATOR);
 define('FS',dirname(dirname(__FILE__)).DS);
@@ -23,9 +33,6 @@ define('EXTENSION',FS.'extensions'.DS);
 //special header and footer file
 define('CORE_ERROR_HEADER',CORE._VIEW.DS.'error'.DS.'_header');
 define('CORE_ERROR_FOOTER',CORE._VIEW.DS.'error'.DS.'_footer');
-
-//always work from here
-chdir(FS);
 
 require_once CORE.'config.php';
 require_once CORE.'functions.php';

@@ -1,4 +1,4 @@
-<? if (!$params->isAjax): ?>
+<?php if (!$params->isAjax): ?>
         </div>
         <div class="footer">
             <span class="copy">&copy; datamotive.com.au <?= date('Y') ?> &nbsp; |
@@ -8,4 +8,4 @@
         </div>
     </body>
 </html>
-<?endif?>
+<?php endif?>

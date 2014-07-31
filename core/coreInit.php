@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @author Ming Teoh
+ * @copyright 2013
+ * @name Tramo Framework
+ *
+ * @license http://opensource.org/licenses/MIT
+ */
+
 //runtime config
 $runtimeConfig = config::getInstance();
 
@@ -33,15 +41,8 @@ if (is_array($runtimeConfig->db)) {
             $dsn = "{$dataSource['dbEngine']}:";
             if (!empty($dataSource['dbFile'])) {
                 $dsn .= $dataSource['dbFile'];
-            } else {
-                $dsnParts = array();
-                if (!empty($dataSource['dbHost'])) {
-                    $dsnParts[] = "host={$dataSource['dbHost']}";
-                }
-                if (!empty($dataSource['dbName'])) {
-                    $dsnParts[] = "dbname={$dataSource['dbName']}";
-                }
-                $dsn .= implode(';',$dsnParts);
+            } else if (!empty($dataSource['dbHost']) && !empty($dataSource['dbName'])) {
+                $dsn .= "host={$dataSource['dbHost']};dbname={$dataSource['dbName']}";
             }
         }
         if ($dsn) {
