@@ -235,7 +235,12 @@ function upperToLowerUnderscore($string) {
         }
     }
 
-    return strtolower($string);
+    $resultStr = strtolower($string);
+    if(substr($resultStr,0,1)=='_') {
+        $resultStr = substr($resultStr,1);
+    }
+        
+    return strtolower($resultStr);
 }
 
 function lowerUnderscoreToUpper($string) {
@@ -255,7 +260,7 @@ function lowerUnderscoreToUpper($string) {
 
 function shutdown() {
     $e = error_get_last();
-    if ($e['type'] !== E_ERROR)
+    if (!in_array($e['type'],array(E_ERROR,E_PARSE,E_COMPILE_ERROR,E_COMPILE_WARNING,E_DEPRECATED)))
         return;
 
     view('error/shutdown', array('type' => errorGetType($e['type']), 'message' => $e['message'], 'file' => $e['file'], 'line' => $e['line'], 'params' => config::getHandler('param')));
@@ -367,4 +372,8 @@ function human_filesize($bytes, $decimals = 2) {
   $factor = floor((strlen($bytes) - 1) / 3);
   if($factor <1) return '1KB';
   return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . $szLabel[$sz[$factor]];
+}
+
+function line($str,$timestamp=true) {
+    echo ($timestamp?date(DATE_ISO8601)."\t":'') . $str . PHP_EOL;
 }

@@ -73,7 +73,7 @@ class config {
         //fix db datasource
         foreach($runtimeConfig['db'] as $name => $array) {
             if(strstr($name,'dataSource')) {
-                foreach(array('dbEngine','dbHost','dbFile','dbDsn','dbName','dbUser','dbPassword') as $key) {
+                foreach(array('dbEngine','dbHost','dbFile','dbDsn','dbName','dbUser','dbPassword','profiling') as $key) {
                     if(empty($array[$key]) && !empty($runtimeConfig['db'][$key])) {
                         $runtimeConfig['db'][$name][$key] = $runtimeConfig['db'][$key];
                     }

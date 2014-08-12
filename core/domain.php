@@ -33,9 +33,9 @@ class domain {
         $whereClause = '';
         foreach (get_object_vars($this) as $name => $value) {
             if (is_object($value)) {
-                $value->save();
+//                $value->save();
                 $this->{$name.'_id'} = $data[upperToLowerUnderscore($name.'_id')] = $value->id;
-            } else if(is_array($value) && !empty($value) && !in_array($name,array('belongsTo','hasMany','manyToMany'))) {
+            } else if(is_array($value) && !empty($value) && !in_array($name,array('belongsTo','property','hasMany','manyToMany'))) {
                 foreach($value as $el) {
                     $el->save();
                 }
@@ -47,7 +47,7 @@ class domain {
                 $this->$name = $data[upperToLowerUnderscore($name)] = date(DATE_ISO8601);
             } else if ($name == 'dateUpdated') {
                 $this->$name = $data[upperToLowerUnderscore($name)] = date(DATE_ISO8601);
-            } else if (!in_array($name,array('belongsTo','hasMany','manyToMany'))) {
+            } else if (!in_array($name,array('belongsTo','property','hasMany','manyToMany'))) {
                 $data[upperToLowerUnderscore($name)] = $value;
             }
         }
@@ -120,6 +120,21 @@ class domain {
     private function _foreignKey($tableNameToMatch) {
         if(property_exists($this, 'belongsTo')) {
             foreach($this->belongsTo as $property) {
+                if(is_array($property)) {
+                    foreach($property as $field => $table) {
+                        if($table == $tableNameToMatch) {
+                            return $field;
+                        }
+                    }
+                } else {
+                    if($property == $tableNameToMatch) {
+                        return $property;
+                    }
+                }
+            }
+        }
+        if(property_exists($this, 'property')) {
+            foreach($this->property as $property) {
                 if(is_array($property)) {
                     foreach($property as $field => $table) {
                         if($table == $tableNameToMatch) {
@@ -252,6 +267,27 @@ class domain {
     private function _loadChildNodes() {
         if(property_exists($this, 'belongsTo')) {
             foreach($this->belongsTo as $property) {
+                if(is_array($property)) {
+                    foreach($property as $field => $table) {
+                        if(property_exists($this, upperToLowerUnderscore($field).'_id')) {
+                            $this->$field = $table::get($this->{upperToLowerUnderscore($field).'_id'});
+                            unset($this->{upperToLowerUnderscore($field).'_id'});
+                        } else if(property_exists($this, upperToLowerUnderscore($field))) {
+                           $this->$field = $table::get($this->{upperToLowerUnderscore($field)});
+                           unset($this->{upperToLowerUnderscore($field)});
+                        }
+                    }
+                } else {
+                    $propertyFormatted = upperToLowerUnderscore($property);
+                    if($this->{$propertyFormatted.'_id'} != '') {
+                        $this->$property = $property::get($this->{$propertyFormatted.'_id'});
+                    }
+                    unset($this->{$propertyFormatted.'_id'});
+                }
+            }
+        }
+        if(property_exists($this, 'property')) {
+            foreach($this->property as $property) {
                 if(is_array($property)) {
                     foreach($property as $field => $table) {
                         if($this->{upperToLowerUnderscore($field).'_id'} != '') {
