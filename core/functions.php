@@ -377,3 +377,31 @@ function human_filesize($bytes, $decimals = 2) {
 function line($str,$timestamp=true) {
     echo ($timestamp?date(DATE_ISO8601)."\t":'') . $str . PHP_EOL;
 }
+
+function collect($objects,$expression) {
+    $results = array();
+    if(empty($objects)) return $results;
+    foreach($objects as $o) {
+	$o = is_object($o)?$o:(object)$o;
+	if(is_callable($expression)) {
+	    $res = $expression($o);
+	} else {
+	    if(is_array($expression)) {
+		$res = array();
+		foreach($expression as $key) {
+		    if(property_exists($o, $key)) {
+			$res[$key] = $o->$key;
+		    }
+		}
+	    } else {
+		if(property_exists($o, $expression)) {
+		    $res = $o->$expression;
+		}
+	    }
+	}
+	if($res) {
+	    $results[] = $res;
+	}
+    }
+    return $results;
+}
