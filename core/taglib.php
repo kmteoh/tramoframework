@@ -70,7 +70,21 @@ class taglib {
                     foreach($xml->attributes() as $key => $value) {
                         if(substr($value,0,1)=='$') {
                             $var = substr($value,1);
-                            $attrs[$key] = isset($model[$var]) ? $model[$var] : $value;
+                            if(isset($model[$var])) {
+                                $attrs[$key] = $model[$var];
+                            } else {
+                                $matcher = function($str) use ($model) {
+                                    $c = function($v, $w) {
+                                        if(is_object($v)) {
+                                            $v = (array) $v;
+                                        }
+                                        return $w ? $v[$w] : $v;
+                                    };
+                                    return array_reduce(preg_split('~\[\'|\'\]~', $str), $c, $model);
+                                };  
+                                $res = $matcher($var);
+                                $attrs[$key] = $res ? $res : $value;
+                            }
                         } else {
                             $attrs[$key] = (string) $value;
                         }
