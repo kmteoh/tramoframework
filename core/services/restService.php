@@ -16,7 +16,7 @@ class restService extends service {
     private $_last_error_message;
     private $_info;
     private $_response;
-    private $_responseHeaders;
+    private $_responseStatus;
 
     public function __construct() {
         if (!function_exists('curl_init')) {
@@ -30,10 +30,17 @@ class restService extends service {
 
     }
 
-    public function post($url, $data, $format = 'text') {
+    public function post($url, $data, $format = 'text', $callback = array()) {
         $params = is_array($data) ? http_build_query($data, NULL, '&') : $data;
+	$mimeTypes = config::get('mimeTypes');
+	$headers = array(
+	    'Content-type: ' . $mimeTypes[$format],
+	    'Content-Length: ' . strlen($params)	    
+	);
         $this->option(CURLOPT_POST, TRUE)
+            ->option(CURLOPT_HTTPHEADER, $headers)
             ->option(CURLOPT_POSTFIELDS, $params);
+	return $this->_exec($url,$format,$callback);
     }
 
     public function put() {
@@ -47,12 +54,25 @@ class restService extends service {
     public function reset() {
         //default
         $this->_options = array();
-        $this->_option('TIMEOUT', 30)
-            ->_option('RETURNTRANSFER', true)
-            ->_option('FOLLOWLOCATION', true)
-            ->_option('FAILONERROR', true)
-			->_option('ENCODING', 'gzip')
-            ->_option('HEADERFUNCTION', array(&$this,'_readHeaders'));
+        $this->option('TIMEOUT', 30)
+            ->option('RETURNTRANSFER', true)
+            ->option('FOLLOWLOCATION', true)
+            ->option('FAILONERROR', true)
+	    ->option('ENCODING', 'gzip')
+            ->option('HEADERFUNCTION', array(&$this,'_readHeaders'));
+	
+	return $this;
+    }
+    
+    public function status() {
+	return $this->_responseStatus;
+    }
+    
+    public function lastError() {
+	return array(
+	    'code' => $this->_last_error_code,
+	    'error' => $this->_last_error_message,
+	);
     }
 
     private function _exec($url,$format,$callback) {
@@ -60,7 +80,8 @@ class restService extends service {
         curl_setopt_array($this->_ch, $this->_options);
         $this->_response = curl_exec($this->_ch);
         $this->_info = curl_getinfo($this->_ch);
-
+	$this->_responseStatus = curl_getinfo($this->_ch,CURLINFO_HTTP_CODE);
+	
         if ($this->_response === FALSE) {
             $this->_last_error_code = curl_errno($this->_ch);
             $this->_last_error_message = curl_error($this->_ch);
@@ -79,18 +100,18 @@ class restService extends service {
                     $response = $this->_response;
                     break;
             }
-            if (!empty($callback['success'])) {
+            if (!empty($callback['success']) && is_callable($callback['success'])) {
                 $response = $callback['success']($response);
             }
         } else {
-            if (!empty($callback['failed'])) {
+            if (!empty($callback['failed']) && is_callable($callback['failed'])) {
                 $response = $callback['failed']($this->_last_error_code, $this->_last_error_message);
             }
         }
         return $response;
     }
 
-    private function _option($code, $value, $prefix = 'opt') {
+    public function option($code, $value, $prefix = 'opt') {
         if (is_string($code) && !is_numeric($code)) {
             $code = constant('CURL' . strtoupper($prefix) . '_' . strtoupper($code));
         }
