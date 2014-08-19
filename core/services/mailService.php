@@ -9,9 +9,16 @@
  */
 
 class mailService extends service {
-    public function simpleMail($to,$subject,$body,$from=null,$isHtml=false,$bccAutomated=false,$cc=null,$bcc=null,$highPriority=false) {
+    public function sendHtmlMail($to,$subject,$body,$from=null,$cc=null,$bcc=null,$highPriority=false) {
+        return $this->_sendMail($to,$subject,$body,$from,'html',$cc,$bcc,$highPriority);
+    }
+
+    public function sendTextMail($to,$subject,$body,$from=null,$cc=null,$bcc=null,$highPriority=false) {
+        return $this->_sendMail($to,$subject,$body,$from,'plain',$cc,$bcc,$highPriority);
+    }
+
+    private function _sendMail($to,$subject,$body,$from,$contentType,$cc,$bcc,$highPriority) {
         $runtimeConfing = config::getInstance();
-        $contentType = $isHtml ? 'html' : 'plain';
         $headers = array();
         $headers[] = "MIME-Version: 1.0";
         $headers[] = "Content-type: text/$contentType; charset=iso-8859-1";
@@ -21,7 +28,7 @@ class mailService extends service {
         $headers[] = "From: $from";
         if ($cc)
             $headers[] = "Cc: " . $cc;
-        if ($bccAutomated)
+        if ($bcc)
             $headers[] = "Bcc: " . $bcc;
         if ($highPriority)
             $headers[] = "X-Priority: 1\r\nX-MSMail-Priority: High\r\nImportance: High";
@@ -33,5 +40,4 @@ class mailService extends service {
 
         return mail($to, $subject, $body, $header);
     }
-
 }
