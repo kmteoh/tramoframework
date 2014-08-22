@@ -405,3 +405,26 @@ function collect($objects,$expression) {
     }
     return $results;
 }
+
+function arrayToTable($data,$singleDim=false)
+{
+    if(empty($data)) return;
+    $output = '<table class="table">';
+    if($singleDim){
+        foreach($data as $key => $value)
+            $output .= "<tr><th>$key</th><td>$value</td><td style=\"width:100%\">&nbsp</td></tr>";
+    } else {
+        $output .= '<tr>';
+        foreach(array_keys($data[0]) as $key)
+            $output .= '<th>'.$key.'</th>';
+        $output .= '</tr>';
+        foreach($data as $i => $row) {
+            $output .= '<tr id="r_'.$i.'">';
+            foreach($row as $key => $value)
+                $output .= '<td>'.$value.'</td>';
+            $output .= '</tr>';
+        }
+    }
+    $output .= '</table>';
+    return $output;
+}
