@@ -102,14 +102,12 @@ class urlMapping {
         }
 
         $urls = json_decode(file_get_contents(CONFIG."urlMappings.json"),true);
-        
         $runtimeConfig = config::getInstance();
         if(count($runtimeConfig->extensions)) {
             foreach($runtimeConfig->extensions as $extension) {
-                $urls = array_merge(json_decode(file_get_contents(EXTENSION.$extension.DS._CONFIG.DS."urlMappings.json"),true),$urls);
+                $urls = json_decode(file_get_contents(EXTENSION.$extension.DS._CONFIG.DS."urlMappings.json"),true) + $urls;
             }
         }
-
         return $urls;
     }
 
