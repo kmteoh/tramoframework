@@ -168,10 +168,14 @@ class domain {
                 $criterias = array();
                 for ($i = 0; $i < count($parts); $i++) {
                     $innerParts = explode('Or', $parts[$i]);
+		    $partsCount += count($innerParts)-1;
                     $innerCriterias = array();
                     for($j=0;$j<count($innerParts);$j++) {
-                        list($argumentIdx,$retCriteria) = self::_dynamicQueryBuilder($innerParts[$j], $arguments, $argumentIdx);
+                        list($argumentIdx,$retCriteria,$isNullCheck) = self::_dynamicQueryBuilder($innerParts[$j], $arguments, $argumentIdx);
                         $innerCriterias[] = $retCriteria;
+			if($isNullCheck) {
+			    $partsCount--;
+			}
                     }
                     $criterias[] = count($innerCriterias)>1 ? '('.implode(' or ', $innerCriterias).')' : $innerCriterias[0];
                 }
@@ -205,6 +209,7 @@ class domain {
         $equal = "='$1'";
         $field = $part;
         preg_match_all('/(LessThanEquals|LessThanEqual|LessThan|GreaterThanEquals|GreaterThanEqual|GreaterThan|Between|Like|Not|InList|IsNull|IsNotNull)/', $part, $matches);
+	$isNullCheck = false;
         if (count($matches[0])) {
             switch ($matches[0][0]) {
                 case "Not":
@@ -234,9 +239,11 @@ class domain {
                     $equal = " in ($1)";
                     break;
                 case "IsNull":
+		    $isNullCheck = true;
                     $equal = " is null";
                     break;
                 case "IsNotNull":
+		    $isNullCheck = true;
                     $equal = " is not null";
                     break;
             }
@@ -261,7 +268,7 @@ class domain {
             $equal = str_replace('$2', $value, $equal);
             $argumentIdx++;
         }
-        return array($argumentIdx,upperToLowerUnderscore($field) . $equal);
+        return array($argumentIdx,upperToLowerUnderscore($field) . $equal,$isNullCheck);
     }
 
     private function _loadChildNodes() {
