@@ -235,8 +235,8 @@ class pTaglib {
         }
         $output = '<table class="table table-hover'.(!empty($attrs['cssClass'])?' '.$attrs['cssClass']:'').'"'.(!empty($attrs['id'])?' id="'.$attrs['id'].'"':'').'>';
         $output .= '<thead><tr class="row">';
-        if(!empty($columns)) {
-            foreach($columns as $i => $key) {
+        if(!empty($headers)) {
+            foreach($headers as $i => $key) {
                 $output .= '<th>' . (!empty($headers[$i]) ? $headers[$i] : ucfirst($key)) . '</th>';
             }
         }
