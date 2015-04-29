@@ -7,8 +7,8 @@
  *
  * @license http://opensource.org/licenses/MIT
  */
-
-class restService extends service {
+class restService extends service
+{
 
     private $_ch;
     private $_options;
@@ -17,71 +17,96 @@ class restService extends service {
     private $_info;
     private $_response;
     private $_responseStatus;
+    private $_headers;
 
-    public function __construct() {
+    public function __construct()
+    {
         if (!function_exists('curl_init')) {
             throw new LibraryNotFoundException('cURL runtime library does not seem to be loaded');
         }
         $this->reset();
     }
 
-    public function get($url, $format = 'text', $callback = array()) {
-        return $this->_exec($url,$format,$callback);
+    public function get($url, $format = 'text', $callback = array())
+    {
+        return $this->_exec($url, $format, $callback);
 
     }
 
-    public function post($url, $data, $format = 'text', $callback = array()) {
+    public function post($url, $data, $format = 'text', $callback = array())
+    {
         $params = is_array($data) ? http_build_query($data, NULL, '&') : $data;
-	$mimeTypes = config::get('mimeTypes');
-	$headers = array(
-	    'Content-type: ' . $mimeTypes[$format],
-	    'Content-Length: ' . strlen($params)	    
-	);
+        $mimeTypes = config::get('mimeTypes');
+        $this->_headers = array_merge($this->_headers,array(
+            'Content-Type: ' . $mimeTypes[$format],
+            'Content-Length: ' . strlen($params)
+        ));
         $this->option(CURLOPT_POST, TRUE)
-            ->option(CURLOPT_HTTPHEADER, $headers)
+            ->option(CURLOPT_HTTPHEADER, $this->_headers)
             ->option(CURLOPT_POSTFIELDS, $params);
-	return $this->_exec($url,$format,$callback);
+        return $this->_exec($url, $format, $callback);
     }
 
-    public function put() {
-
-    }
-
-    public function delete() {
+    public function put()
+    {
 
     }
 
-    public function reset() {
+    public function delete()
+    {
+
+    }
+
+    public function reset()
+    {
         //default
         $this->_options = array();
         $this->option('TIMEOUT', 30)
             ->option('RETURNTRANSFER', true)
             ->option('FOLLOWLOCATION', true)
             ->option('FAILONERROR', true)
-	    ->option('ENCODING', 'gzip')
-            ->option('HEADERFUNCTION', array(&$this,'_readHeaders'));
-	
-	return $this;
-    }
-    
-    public function status() {
-	return $this->_responseStatus;
-    }
-    
-    public function lastError() {
-	return array(
-	    'code' => $this->_last_error_code,
-	    'error' => $this->_last_error_message,
-	);
+            ->option('ENCODING', 'gzip')
+            ->option('HEADERFUNCTION', array(&$this, '_readHeaders')
+        );
+
+        if(!empty($_SERVER['HTTP_USER_AGENT'])) {
+            $this->option('USERAGENT', $_SERVER['HTTP_USER_AGENT']);
+        }
+
+        $this->_headers = array();
+        return $this;
     }
 
-    private function _exec($url,$format,$callback) {
+    public function setHeader($key,$value) {
+        $this->_headers[] = "{$key}: $value";
+        return $this;
+    }
+
+    public function getRawResponse() {
+        return $this->_response;
+    }
+
+    public function status()
+    {
+        return $this->_responseStatus;
+    }
+
+    public function lastError()
+    {
+        return array(
+            'code' => $this->_last_error_code,
+            'error' => $this->_last_error_message,
+        );
+    }
+
+    private function _exec($url, $format, $callback)
+    {
         $this->_ch = curl_init($url);
         curl_setopt_array($this->_ch, $this->_options);
         $this->_response = curl_exec($this->_ch);
         $this->_info = curl_getinfo($this->_ch);
-	$this->_responseStatus = curl_getinfo($this->_ch,CURLINFO_HTTP_CODE);
-	
+        $this->_responseStatus = curl_getinfo($this->_ch, CURLINFO_HTTP_CODE);
+
         if ($this->_response === FALSE) {
             $this->_last_error_code = curl_errno($this->_ch);
             $this->_last_error_message = curl_error($this->_ch);
@@ -111,7 +136,8 @@ class restService extends service {
         return $response;
     }
 
-    public function option($code, $value, $prefix = 'opt') {
+    public function option($code, $value, $prefix = 'opt')
+    {
         if (is_string($code) && !is_numeric($code)) {
             $code = constant('CURL' . strtoupper($prefix) . '_' . strtoupper($code));
         }
@@ -120,7 +146,8 @@ class restService extends service {
         return $this;
     }
 
-    private function _readHeaders($ch, $header) {
+    private function _readHeaders($ch, $header)
+    {
         //extracting example data: filename from header field Content-Disposition
         return strlen($header);
     }

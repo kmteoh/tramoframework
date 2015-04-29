@@ -70,6 +70,11 @@ class cache {
         file_put_contents($this->_path."/".$label.".cache",$data);
     }
 
+    private function _invalidateFile($label) {
+        $label = sha1($label);
+        @unlink($this->_path."/".$label.".cache");
+    }
+
     private function _setupFile() {
         @mkdir($this->_path);
     }

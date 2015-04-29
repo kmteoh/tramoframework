@@ -34,7 +34,7 @@ class pTaglib {
 
     public function onload() {
         if (!empty($_SESSION['onload'])) {
-            $script = '   <script>$(function(){' . implode(PHP_EOL, $_SESSION['onload']) . '});</script>';
+            $script = PHP_EOL.'<!--onload-->'.PHP_EOL.'<script>$(function(){' . implode(PHP_EOL, $_SESSION['onload']) . '});</script>'.PHP_EOL.'<!--onload end-->'.PHP_EOL;
             unset($_SESSION['onload']);
             return $script;
         }
@@ -42,23 +42,23 @@ class pTaglib {
 
     public function enqueueJs() {
         if (!empty($_SESSION['js'])) {
-            $script = '';
+            $script = PHP_EOL.'<!--enqueueJs-->'.PHP_EOL;
             foreach($_SESSION['js'] as $js) {
-                $script .= '   <script src='.$js.'></script>';
+                $script .= '   <script src='.$js.'></script>'.PHP_EOL;
             }
             unset($_SESSION['js']);
-            return $script;
+            return $script.PHP_EOL.'<!--enqueueJs end-->'.PHP_EOL;
         }
     }
 
     public function enqueueCss() {
         if (!empty($_SESSION['css'])) {
-            $script = '';
+            $script = PHP_EOL.'<!--enqueueCss-->'.PHP_EOL;
             foreach($_SESSION['css'] as $css) {
-                $script .= '   <link href="'.$css.'" rel="stylesheet">';
+                $script .= '   <link href="'.$css.'" rel="stylesheet">'.PHP_EOL;
             }
             unset($_SESSION['css']);
-            return $script;
+            return $script.PHP_EOL.'<!--enqueueCss end-->'.PHP_EOL;
         }
     }
 
@@ -80,11 +80,8 @@ class pTaglib {
         $output = '<select name="' . $attrs['name'] . '"';
         $output .= ' id="' . (!empty($attrs['id']) ? $attrs['id'] : $attrs['name']) . '"';
         foreach ($attrs as $key => $value) {
-            if (!in_array($key, array('name', 'min', 'max','required'))) {
+            if (!in_array($key, array('name', 'min', 'max'))) {
                 $output .= " $key=\"$value\"";
-            }
-            if($key == 'required') {
-                $output .= " $key";
             }
         }
         $output .= '>';
@@ -105,14 +102,18 @@ class pTaglib {
     }
 
     public function keyValueDropDown($attrs = array(), $body = null) {
-        $output = '<select name="' . $attrs['name'] . '"';
+
+		if(empty($attrs['value']) && !empty($attrs['defaultValue'])){
+			$attrs['value'] = $attrs['defaultValue'];
+		}
+
+        $output = '';
+
+		$output .= '<select name="' . $attrs['name'] . '"';
         $output .= ' id="' . (!empty($attrs['id']) ? $attrs['id'] : $attrs['name']) . '"';
         foreach ($attrs as $key => $value) {
-            if (!in_array($key, array('name', 'options', 'value','required'))) {
+            if (!in_array($key, array('name', 'options', 'value', 'defaultValue'))) {
                 $output .= " $key=\"$value\"";
-            }
-            if($key == 'required') {
-                $output .= " $key";
             }
         }
         $output .= '>';
@@ -120,19 +121,19 @@ class pTaglib {
             $output .= '<option value="">' . $attrs['default'] . '</option>';
         }
         if (!empty($attrs['options'])) {
-            if(!empty($attrs['labelValue'])) {
+            if(!empty($attrs['labelValue'])) { 
                 list($label,$value) = explode(',',$attrs['labelValue']);
                 for($i=0;$i<count($attrs['options']);$i++) {
-                    $selected = (!empty($attrs['value']) && isset($attrs['value']) && trim($attrs['options'][$i]->$value) == $attrs['value'] ? ' selected' : '');
+                    $selected = (!empty($attrs['value']) && isset($attrs['value']) && ltrim($attrs['options'][$i]->$value) == ltrim($attrs['value']) ? ' selected' : '');
 					if(is_object($attrs['options'][$i])) {
-                        $output .= '<option value="' . trim($attrs['options'][$i]->$value) . '"' . $selected . '>' . $attrs['options'][$i]->$label . '</option>';
+                        $output .= '<option value="' . ltrim($attrs['options'][$i]->$value) . '"' . $selected . '>' . $attrs['options'][$i]->$label . '</option>';
                     } else {
-                        $output .= '<option value="' . trim($attrs['options'][$i][$value]) . '"' . $selected . '>' . $attrs['options'][$i][$label] . '</option>';
+                        $output .= '<option value="' . ltrim($attrs['options'][$i][$value]) . '"' . $selected . '>' . $attrs['options'][$i][$label] . '</option>';
                     }
                 }
             } else {
-                foreach ($attrs['options'] as $value => $label) {
-                    $output .= '<option value="' . trim($value) . '"' . (!empty($attrs['value']) && isset($attrs['value']) && trim($value) == $attrs['value'] ? ' selected' : '') . '>' . $label . '</option>';
+				foreach ($attrs['options'] as $value => $label) {
+					$output .= '<option value="' . ltrim($value) . '"' . (!empty($attrs['value']) && isset($attrs['value']) && ltrim($value) == ltrim($attrs['value']) ? ' selected' : '') . '>' . $label . '</option>';
                 }
             }
         }
@@ -178,23 +179,6 @@ class pTaglib {
         return $output;
     }
 
-    public function text($attrs = array(), $body = null) {
-        $output = '<textarea name="' . $attrs['name'] . '"';
-        $output .= ' id="' . (!empty($attrs['id']) ? $attrs['id'] : $attrs['name']) . '"';
-        foreach ($attrs as $key => $value) {
-            if (!in_array($key, array('name', 'min', 'max', 'required','value'))) {
-                $output .= " $key=\"$value\"";
-            }
-            if($key == 'required') {
-                $output .= " $key";
-            }
-        }
-        $output .= ' >';
-        $output .= !empty($attrs['value']) ? $attrs['value'] : '';
-        $output .= '</textarea>';
-        return $output;
-    }
-
     public function listView($attrs=array(),$body=null) {
         $model = array();
         foreach($attrs as $key => $value) {
@@ -203,11 +187,11 @@ class pTaglib {
             }
         }
         ob_start();
-        $c = 0;
-		foreach($attrs['list'] as $i) {
-            $model[$attrs['var']] = $i;
-            view($attrs['view'],$model,$c);
-        $c++;}
+        $i = 0;
+		foreach($attrs['list'] as $item) {
+            $model[$attrs['var']] = $item;
+            view($attrs['view'],$model,$i++);
+        }
         return taglib::parseTags(ob_get_clean(),$model);
     }
 
@@ -235,8 +219,8 @@ class pTaglib {
         }
         $output = '<table class="table table-hover'.(!empty($attrs['cssClass'])?' '.$attrs['cssClass']:'').'"'.(!empty($attrs['id'])?' id="'.$attrs['id'].'"':'').'>';
         $output .= '<thead><tr class="row">';
-        if(!empty($headers)) {
-            foreach($headers as $i => $key) {
+        if(!empty($columns)) {
+            foreach($columns as $i => $key) {
                 $output .= '<th>' . (!empty($headers[$i]) ? $headers[$i] : ucfirst($key)) . '</th>';
             }
         }
@@ -259,21 +243,5 @@ class pTaglib {
         $output .= '</tbody></table>';
 
         return $output;
-    }
-
-    public function formatDate($attrs=array(),$body=null) {
-        if(empty($attrs['default'])) {
-            $attrs['default'] = '&ndash;';
-        }
-
-        if(empty($attrs['value'])) {
-            return $attrs['default'];
-        }
-
-        if(empty($attrs['format'])) {
-            $attrs['format'] = 'Y-m-d';
-        }
-        
-        return date($attrs['format'],strtotime($attrs['value']));
     }
 }

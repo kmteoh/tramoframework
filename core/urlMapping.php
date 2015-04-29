@@ -18,16 +18,16 @@ class urlMapping {
 
         $mimeTypes = config::get('mimeTypes');
         $extentions = array_keys($mimeTypes);
-        $pathinfo = pathinfo($params->path);
+        $pathinfo = pathinfo($params->_q);
         if(!empty($pathinfo['extension']) && in_array($pathinfo['extension'],$extentions)) {
             $params->format = $pathinfo['extension'];
-            $params->path = str_replace($pathinfo['basename'],$pathinfo['filename'],$params->path);
+            $params->_q = str_replace($pathinfo['basename'],$pathinfo['filename'],$params->_q);
         }
 
-        if(substr($params->path,-1) == '/') {
-            $params->path = substr($params->path,0,-1);
+        if(substr($params->_q,-1) == '/') {
+            $params->_q = substr($params->_q,0,-1);
         }
-        $urlParts = $params->path ? explode('/',$params->path) : array();
+        $urlParts = $params->_q ? explode('/',$params->_q) : array();
 
         if(empty($urlParts))
             $mapped = $urls['/'];
@@ -78,7 +78,7 @@ class urlMapping {
         }
 
         if(empty($mapped)) {
-            throw new UrlMappingErrorException("Can't match pattern for \"/{$params->path}\"");
+            throw new UrlMappingErrorException("Can't match pattern for \"/{$params->_q}\"");
         }
 
         foreach($mapped as $key => $value) {
@@ -98,16 +98,18 @@ class urlMapping {
 
     private static final function _getDefinedUrls() {
         if(!file_exists(CONFIG."urlMappings.json")) {
-            throw new FileNotFoundException(CONFIG."urlMappings.json not found");
+            throw new FileNotFoundException(CONFIG."urlMappings.json not found (6)");
         }
 
         $urls = json_decode(file_get_contents(CONFIG."urlMappings.json"),true);
+        
         $runtimeConfig = config::getInstance();
         if(count($runtimeConfig->extensions)) {
             foreach($runtimeConfig->extensions as $extension) {
-                $urls = json_decode(file_get_contents(EXTENSION.$extension.DS._CONFIG.DS."urlMappings.json"),true) + $urls;
+                $urls = array_merge(json_decode(file_get_contents(EXTENSION.$extension.DS._CONFIG.DS."urlMappings.json"),true),$urls);
             }
         }
+
         return $urls;
     }
 

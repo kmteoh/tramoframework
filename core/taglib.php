@@ -60,6 +60,7 @@ class taglib {
         preg_match_all('/<(\w+):(.*)\/>/',substr($html,1),$m);
 
         //found some taglibs being used. proceed
+        $pCss = $pJs = false;
         if(!empty($m[0])) {
             for($i=0;$i<count($m[0]);$i++) {
                 //find attributes and body
@@ -70,21 +71,7 @@ class taglib {
                     foreach($xml->attributes() as $key => $value) {
                         if(substr($value,0,1)=='$') {
                             $var = substr($value,1);
-                            if(isset($model[$var])) {
-                                $attrs[$key] = $model[$var];
-                            } else {
-                                $matcher = function($str) use ($model) {
-                                    $c = function($v, $w) {
-                                        if(is_object($v)) {
-                                            $v = (array) $v;
-                                        }
-                                        return $w ? $v[$w] : $v;
-                                    };
-                                    return array_reduce(preg_split('~\[\'|\'\]~', $str), $c, $model);
-                                };  
-                                $res = $matcher($var);
-                                $attrs[$key] = $res ? $res : $value;
-                            }
+                            $attrs[$key] = isset($model[$var]) ? $model[$var] : $value;
                         } else {
                             $attrs[$key] = (string) $value;
                         }
@@ -95,10 +82,20 @@ class taglib {
                 //find the taglib name being used
                 $findMethod = array();
                 preg_match('/(\w*)\s(.*)/',$m[2][$i],$findMethod);
+
+                $class = $m[1][$i] . 'Taglib';
                 $method = $findMethod[1];
 
+                if($class == 'p' && $method == 'enqueueCss') {
+                    $pCss = array($attrs,$body);
+                    continue;
+                }
+                if($class == 'p' && $method == 'enqueueJs') {
+                    $pJs = array($attrs,$body);
+                    continue;
+                }
+
                 //do it
-                $class = $m[1][$i] . 'Taglib';
                 if(!class_exists($class))
                     throw new TaglibNotFoundException("Taglib $class not exists!");
                 if(!method_exists($class,$method))
@@ -107,6 +104,19 @@ class taglib {
                 $newBody = in_array($method,array('debug'))?$taglib->$method(config::getInstance()):$taglib->$method($attrs,$body);
                 $html = str_replace($m[0][$i],$newBody,$html);
             }
+        }
+        if($pCss || $pJs) {
+            $taglib = new pTaglib();
+        }
+        if($pCss) {
+            $method = 'enqueueCss';
+            $newBody = $taglib->$method($pCss['attrs'],$pCss['body']);
+            $html = str_replace($pCss['body'],$newBody,$html);
+        }
+        if($pJs) {
+            $method = 'enqueueJs';
+            $newBody = $taglib->$method($pJs['attrs'],$pJs['body']);
+            $html = str_replace($pJs['body'],$newBody,$html);
         }
         return $html;
     }

@@ -80,18 +80,31 @@ class appender {
             if($this->_appender == appender::APPENDER_FILE) {
                 $dir = dirname($this->_filename);
                 @mkdir($dir);
-                if($this->_seperator == appender::SEPERATOR_DAY && file_exists($this->_filename) && !file_exists($this->_filename.'.'.date('Ymd',strtotime('yesterday')))) {
-                    rename($this->_filename, $this->_filename.'.'.date('Ymd',strtotime('yesterday')));
+                $zipFilename = $this->_filename.'.'.date('Ymd').'.zip';
+                if($this->_seperator == appender::SEPERATOR_DAY && file_exists($this->_filename) && !file_exists($zipFilename)) {
+                    $this->archive($zipFilename);
                 } else if (strstr($this->_seperator,appender::SEPERATOR_MEGABYTE)) {
+                    $zipFilename = $this->_filename.'.'.date('YmdHis').'.zip';
                     $size = str_replace(appender::SEPERATOR_MEGABYTE,'',$this->_seperator);
                     if(file_exists($this->_filename) && (filesize($this->_filename)/1000000) > $size) {
-                        rename($this->_filename, $this->_filename.'.'.date('YmdHis'));
+                        $this->archive($zipFilename);
                     }
                 }
                 file_put_contents($this->_filename, $string.PHP_EOL, FILE_APPEND);
             } else if($this->_appender == appender::APPENDER_SCREEN) {
                 echo str_replace('%s',$string,$this->_template);
             }
+        }
+    }
+
+    private function archive($filename) {
+        $zip = new ZipArchive();
+        if ($zip->open($filename, ZipArchive::CREATE)!==TRUE) {
+            rename($this->_filename, substr($filename,0,-4));
+        } else {
+            $zip->addFile(realpath($this->_filename), basename(substr($filename,0,-4)));
+            $zip->close();
+            file_put_contents($this->_filename,'');
         }
     }
 }

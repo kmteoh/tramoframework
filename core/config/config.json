@@ -1,5 +1,6 @@
 {
     "environment": "development",
+    "version": "1.0",
     "environments": {
         "development": {},
 		"integration": {},
@@ -10,6 +11,7 @@
         "csv" : "text/csv",
         "json" : "application/json",
         "xml" : "application/xml",
+        "text" : "text/plain",
         "html" : "text/html"
     },
     "handlers": {

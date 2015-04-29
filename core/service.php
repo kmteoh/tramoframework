@@ -24,6 +24,14 @@ class service {
                 $instances[$calledClass]->dataSource = config::getHandler('dataSource');
             if (property_exists($instances[$calledClass], 'config'))
                 $instances[$calledClass]->config = config::getInstance();
+
+            $services = service::getServices();
+            if (count($services)) {
+                foreach ($services as $service) {
+                    if ($calledClass!=$service && property_exists($instances[$calledClass], $service))
+                        $instances[$calledClass]->$service = $service::getInstance();
+                }
+            }
         }
 
         return $instances[$calledClass];

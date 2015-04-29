@@ -38,10 +38,10 @@ class config {
 
     private function _init() {
         if(!file_exists(CONFIG . "dataSource.json")) {
-            throw new FileNotFoundException(CONFIG . "dataSource.json is expected!");
+            throw new FileNotFoundException(CONFIG . "dataSource.json is expected! (2)");
         }
         if(!file_exists(CONFIG . "config.json")) {
-            throw new FileNotFoundException(CONFIG . "config.json is expected!");
+            throw new FileNotFoundException(CONFIG . "config.json is expected! (3)");
         }
         $rawConfig['dbSource'] = json_decode(file_get_contents(CONFIG . "dataSource.json"), true);
         $rawConfig['dbSource']['dbEngine'] = !empty($rawConfig['dbSource']['dbEngine']) ? $rawConfig['dbSource']['dbEngine'] : 'mysql';
@@ -73,14 +73,17 @@ class config {
         //fix db datasource
         foreach($runtimeConfig['db'] as $name => $array) {
             if(strstr($name,'dataSource')) {
-                foreach(array('dbEngine','dbHost','dbFile','dbDsn','dbName','dbUser','dbPassword','profiling') as $key) {
-                    if(empty($array[$key]) && !empty($runtimeConfig['db'][$key])) {
-                        $runtimeConfig['db'][$name][$key] = $runtimeConfig['db'][$key];
-                    }
-                    unset($runtimeConfig['db'][$key]);
+                if(empty($array['dbHost']) && !empty($runtimeConfig['db']['dbHost'])) {
+                    $runtimeConfig['db'][$name]['dbHost'] = $runtimeConfig['db']['dbHost'];
+                }
+                if(empty($array['dbEngine']) && !empty($runtimeConfig['db']['dbEngine'])) {
+                    $runtimeConfig['db'][$name]['dbEngine'] = $runtimeConfig['db']['dbEngine'];
                 }
             }
         }
+        unset($runtimeConfig['db']['dbHost']);
+        unset($runtimeConfig['db']['dbEngine']);
+
         $this->_configs = $runtimeConfig;
     }
 

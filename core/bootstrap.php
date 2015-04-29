@@ -77,7 +77,7 @@ try {
             $params->exception = $e;
             //reaction
             $controllerObj = new $controllerName();
-            $model = call_user_func(array($controllerObj,$action));
+            $model = call_user_func(array($controllerObj,$action),$e);
         } else {
             throw $e;
         }
@@ -131,7 +131,7 @@ try {
         redirect($model['goto']);
     }
     //if body is given, use as is
-    else if (!empty($model['body'])) {
+    else if (isset($model['body'])) {
         $body = $model['body'];
     }
     //anything else
@@ -153,9 +153,10 @@ try {
             }
         }
         if(!$templateExist) {
-            throw new FileNotFoundException("Template `$template` does not seem to exist");
+            throw new FileNotFoundException("Template `$template` does not seem to exist (1)");
         }
         $params->templateToUse = $template.DS;
+        define('TEMPLATE_NAME',$template);
 
         //get content
         if($cache && $cache->canCache('page') && $cachedBody = $cache->get("{$params->host}{$params->query}view")) {
@@ -181,6 +182,11 @@ try {
 
             //process taglibs
             $body = taglib::parseTags($body, $model);
+
+            //inject system code
+            $injector = PHP_EOL."\t<meta name=\"generated-by\" content=\"Tramo Framework\"/>";
+            $injector .= PHP_EOL."\t<meta name=\"generated-by-version\" content=\"".config::get('version')."\"/>";
+            $body = str_replace('</head>',$injector.PHP_EOL."</head>",$body);
 
             if($cache && $cache->canCache('page')) {
                 $cache->set("{$params->host}{$params->query}view",$body);
