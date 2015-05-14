@@ -50,4 +50,5 @@ import('taglib');
 import('view');
 import('urlMapping');
 import('param');
+import('session');
 

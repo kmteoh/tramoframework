@@ -17,6 +17,7 @@
     "handlers": {
         "cache":"cache",
         "param":"param",
-        "logger":"logger"
+        "logger":"logger",
+        "session":"session"
     }
 }

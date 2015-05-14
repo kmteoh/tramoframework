@@ -194,6 +194,11 @@ try {
         }
     }
 
+    //run 'beforeView' filters
+    for($i=0;$i<count($filters);$i++) {
+        $body = $filters[$i]->beforeView($controller,$action,$model,$body);
+    }
+
     echo $body;
 
     //run 'afterView' filters

@@ -14,6 +14,8 @@ abstract class filter {
 
     abstract public function after($controller, $action, $model);
 
+    abstract public function beforeView($controller, $action, $model, $html);
+
     abstract public function afterView($controller, $action, $model, $html);
 
     public static final function getFilters() {

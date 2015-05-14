@@ -23,5 +23,6 @@ class controller {
             $this->dataSource = config::getHandler('dataSource');
 
         $this->params = config::getHandler('param');
+        $this->session = config::getHandler('session');
     }
 }
