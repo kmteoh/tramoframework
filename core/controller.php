@@ -25,4 +25,6 @@ class controller {
         $this->params = config::getHandler('param');
         $this->session = config::getHandler('session');
     }
+
+    public function index() {}
 }

@@ -7,7 +7,7 @@
  *
  * @license http://opensource.org/licenses/MIT
  */
-
+ 
 class domain {
 
     public function __construct($data = null, $ignoreNotExistanceVar = false) {
@@ -16,7 +16,7 @@ class domain {
                 $property = lowerUnderscoreToUpper($key);
                 if (property_exists($this, $property)) {
                     $this->$property = $value;
-                } else if(!$ignoreNotExistanceVar){
+                } else if (!$ignoreNotExistanceVar) {
                     $this->$key = $value;
                 }
             }
@@ -34,27 +34,27 @@ class domain {
         foreach (get_object_vars($this) as $name => $value) {
             if (is_object($value)) {
 //                $value->save();
-                $this->{$name.'_id'} = $data[upperToLowerUnderscore($name.'_id')] = $value->id;
-            } else if(is_array($value) && !empty($value) && !in_array($name,array('belongsTo','property','hasMany','manyToMany'))) {
-                foreach($value as $el) {
+                $this->{$name . '_id'} = $data[upperToLowerUnderscore($name . '_id')] = $value->id;
+            } else if (is_array($value) && !empty($value) && !in_array($name, array('belongsTo', 'property', 'hasMany', 'manyToMany'))) {
+                foreach ($value as $el) {
                     $el->save();
                 }
             } else if (is_bool($value)) {
-                $data[upperToLowerUnderscore($name)] = $value?1:0;
+                $data[upperToLowerUnderscore($name)] = $value ? 1 : 0;
             } else if ($name == 'id' && !empty($value) && !$forceInsert) {
                 $whereClause = "id='$value'";
             } else if ($name == 'dateCreated' && ((property_exists($this, 'id') && $this->id == '') || $forceInsert)) {
                 $this->$name = $data[upperToLowerUnderscore($name)] = date(DATE_ISO8601);
             } else if ($name == 'dateUpdated') {
                 $this->$name = $data[upperToLowerUnderscore($name)] = date(DATE_ISO8601);
-            } else if (!in_array($name,array('belongsTo','property','hasMany','manyToMany'))) {
+            } else if (!in_array($name, array('belongsTo', 'property', 'hasMany', 'manyToMany'))) {
                 $data[upperToLowerUnderscore($name)] = $value;
             }
         }
 
         $db = $this->_getDataSource();
         $numRows = $db->save($this->_getName(true), $data, $whereClause, $forceInsert);
-        if((empty($whereClause) || $forceInsert)) {
+        if ((empty($whereClause) || $forceInsert)) {
             $this->id = $db->lastInsertId;
             return $this->id;
         } else {
@@ -73,13 +73,13 @@ class domain {
     }
 
     public final function __get($name) {
-        if(property_exists($this, 'hasMany')) {
-            foreach($this->hasMany as $property) {
+        if (property_exists($this, 'hasMany')) {
+            foreach ($this->hasMany as $property) {
                 $col = $domain = null;
-                if(is_array($property)) {
-                    foreach($property as $field => $table) {
-                        if($field == $name) {
-                            if($table == $this->_getName()) {
+                if (is_array($property)) {
+                    foreach ($property as $field => $table) {
+                        if ($field == $name) {
+                            if ($table == $this->_getName()) {
                                 $col = $this->_foreignKey($table);
                                 $domain = $table;
                             } else {
@@ -92,13 +92,13 @@ class domain {
                         }
                     }
                 } else {
-                    if($property == $name) {
+                    if ($property == $name) {
                         $col = $domain = $name;
                     }
                 }
 
-                if($col) {
-                    $fx = 'findAllBy'.ucfirst($col).'Id';
+                if ($col) {
+                    $fx = 'findAllBy' . ucfirst($col) . 'Id';
                     $this->$name = $domain::$fx($this->id);
                 }
             }
@@ -118,31 +118,31 @@ class domain {
     }
 
     private function _foreignKey($tableNameToMatch) {
-        if(property_exists($this, 'belongsTo')) {
-            foreach($this->belongsTo as $property) {
-                if(is_array($property)) {
-                    foreach($property as $field => $table) {
-                        if($table == $tableNameToMatch) {
+        if (property_exists($this, 'belongsTo')) {
+            foreach ($this->belongsTo as $property) {
+                if (is_array($property)) {
+                    foreach ($property as $field => $table) {
+                        if ($table == $tableNameToMatch) {
                             return $field;
                         }
                     }
                 } else {
-                    if($property == $tableNameToMatch) {
+                    if ($property == $tableNameToMatch) {
                         return $property;
                     }
                 }
             }
         }
-        if(property_exists($this, 'property')) {
-            foreach($this->property as $property) {
-                if(is_array($property)) {
-                    foreach($property as $field => $table) {
-                        if($table == $tableNameToMatch) {
+        if (property_exists($this, 'property')) {
+            foreach ($this->property as $property) {
+                if (is_array($property)) {
+                    foreach ($property as $field => $table) {
+                        if ($table == $tableNameToMatch) {
                             return $field;
                         }
                     }
                 } else {
-                    if($property == $tableNameToMatch) {
+                    if ($property == $tableNameToMatch) {
                         return $property;
                     }
                 }
@@ -152,6 +152,10 @@ class domain {
     }
 
     private function _dynamicQueryResolver($method, $arguments) {
+        if(in_array($method,array('count'))) {
+            return call_user_func_array(array($this, "_$method"),array());
+        }
+
         $criteria = $option = null;
         $fxMatches = array();
         preg_match_all('/(get|findBy|findAllBy|findAll|countBy|where|findMany|associate)/', $method, $fxMatches);
@@ -168,20 +172,20 @@ class domain {
                 $criterias = array();
                 for ($i = 0; $i < count($parts); $i++) {
                     $innerParts = explode('Or', $parts[$i]);
-		    $partsCount += count($innerParts)-1;
+                    $partsCount += count($innerParts) - 1;
                     $innerCriterias = array();
-                    for($j=0;$j<count($innerParts);$j++) {
-                        list($argumentIdx,$retCriteria,$isNullCheck) = self::_dynamicQueryBuilder($innerParts[$j], $arguments, $argumentIdx);
+                    for ($j = 0; $j < count($innerParts); $j++) {
+                        list($argumentIdx, $retCriteria, $isNullCheck) = self::_dynamicQueryBuilder($innerParts[$j], $arguments, $argumentIdx);
                         $innerCriterias[] = $retCriteria;
-			if($isNullCheck) {
-			    $partsCount--;
-			}
+                        if ($isNullCheck) {
+                            $partsCount--;
+                        }
                     }
-                    $criterias[] = count($innerCriterias)>1 ? '('.implode(' or ', $innerCriterias).')' : $innerCriterias[0];
+                    $criterias[] = count($innerCriterias) > 1 ? '(' . implode(' or ', $innerCriterias) . ')' : $innerCriterias[0];
                 }
                 $criteria = implode(' and ', $criterias);
                 if (count($arguments) == $partsCount + 1) {
-                    $option = call_user_func_array(array($this,'_options'),array($arguments[$partsCount]));
+                    $option = call_user_func_array(array($this, '_options'), array($arguments[$partsCount]));
                 }
 
                 $args[0] = $criteria;
@@ -189,7 +193,7 @@ class domain {
                 break;
 
             case "findAll":
-                $args[0] = call_user_func_array(array($this,'_options'),$arguments);
+                $args[0] = call_user_func_array(array($this, '_options'), $arguments);
                 break;
 
             case "findMany":
@@ -204,12 +208,12 @@ class domain {
         return call_user_func_array(array($this, $method), $args);
     }
 
-    private static function _dynamicQueryBuilder($part,$arguments,$argumentIdx){
+    private static function _dynamicQueryBuilder($part, $arguments, $argumentIdx) {
         $matches = array();
         $equal = "='$1'";
         $field = $part;
         preg_match_all('/(LessThanEquals|LessThanEqual|LessThan|GreaterThanEquals|GreaterThanEqual|GreaterThan|Between|Like|Not|InList|IsNull|IsNotNull)/', $part, $matches);
-	$isNullCheck = false;
+        $isNullCheck = false;
         if (count($matches[0])) {
             switch ($matches[0][0]) {
                 case "Not":
@@ -239,11 +243,11 @@ class domain {
                     $equal = " in ($1)";
                     break;
                 case "IsNull":
-		    $isNullCheck = true;
+                    $isNullCheck = true;
                     $equal = " is null";
                     break;
                 case "IsNotNull":
-		    $isNullCheck = true;
+                    $isNullCheck = true;
                     $equal = " is not null";
                     break;
             }
@@ -251,11 +255,11 @@ class domain {
         }
         if (strstr($equal, '$1')) {
             $equal = (is_object($arguments[$argumentIdx]) ? '_id ' : '') . $equal;
-            if(!empty($matches[0][0]) && $matches[0][0] == 'InList') {
-                if(is_string($arguments[$argumentIdx])) {
+            if (!empty($matches[0][0]) && $matches[0][0] == 'InList') {
+                if (is_string($arguments[$argumentIdx])) {
                     $value = $arguments[$argumentIdx];
-                } else if(is_array($arguments[$argumentIdx])) {
-                    $value = "'".implode("','",$arguments[$argumentIdx])."'";
+                } else if (is_array($arguments[$argumentIdx])) {
+                    $value = "'" . implode("','", $arguments[$argumentIdx]) . "'";
                 }
             } else {
                 $value = is_object($arguments[$argumentIdx]) ? $arguments[$argumentIdx]->id : $arguments[$argumentIdx];
@@ -268,54 +272,54 @@ class domain {
             $equal = str_replace('$2', $value, $equal);
             $argumentIdx++;
         }
-        return array($argumentIdx,upperToLowerUnderscore($field) . $equal,$isNullCheck);
+        return array($argumentIdx, upperToLowerUnderscore($field) . $equal, $isNullCheck);
     }
 
     private function _loadChildNodes() {
-        if(property_exists($this, 'belongsTo')) {
-            foreach($this->belongsTo as $property) {
-                if(is_array($property)) {
-                    foreach($property as $field => $table) {
-                        if(property_exists($this, upperToLowerUnderscore($field).'_id')) {
-                            $this->$field = $table::get($this->{upperToLowerUnderscore($field).'_id'});
-                            unset($this->{upperToLowerUnderscore($field).'_id'});
-                        } else if(property_exists($this, upperToLowerUnderscore($field))) {
-                           $this->$field = $table::get($this->{upperToLowerUnderscore($field)});
-                           unset($this->{upperToLowerUnderscore($field)});
+        if (property_exists($this, 'belongsTo')) {
+            foreach ($this->belongsTo as $property) {
+                if (is_array($property)) {
+                    foreach ($property as $field => $table) {
+                        if (property_exists($this, upperToLowerUnderscore($field) . '_id')) {
+                            $this->$field = $table::get($this->{upperToLowerUnderscore($field) . '_id'});
+                            unset($this->{upperToLowerUnderscore($field) . '_id'});
+                        } else if (property_exists($this, upperToLowerUnderscore($field))) {
+                            $this->$field = $table::get($this->{upperToLowerUnderscore($field)});
+                            unset($this->{upperToLowerUnderscore($field)});
                         }
                     }
                 } else {
                     $propertyFormatted = upperToLowerUnderscore($property);
-                    if($this->{$propertyFormatted.'_id'} != '') {
-                        $this->$property = $property::get($this->{$propertyFormatted.'_id'});
+                    if ($this->{$propertyFormatted . '_id'} != '') {
+                        $this->$property = $property::get($this->{$propertyFormatted . '_id'});
                     }
-                    unset($this->{$propertyFormatted.'_id'});
+                    unset($this->{$propertyFormatted . '_id'});
                 }
             }
         }
-        if(property_exists($this, 'property')) {
-            foreach($this->property as $property) {
-                if(is_array($property)) {
-                    foreach($property as $field => $table) {
-                        if($this->{upperToLowerUnderscore($field).'_id'} != '') {
+        if (property_exists($this, 'property')) {
+            foreach ($this->property as $property) {
+                if (is_array($property)) {
+                    foreach ($property as $field => $table) {
+                        if ($this->{upperToLowerUnderscore($field) . '_id'} != '') {
                             $t = new $table();
-                            $this->$field = $t->_get($this->{upperToLowerUnderscore($field).'_id'});
+                            $this->$field = $t->_get($this->{upperToLowerUnderscore($field) . '_id'});
                         }
-                        unset($this->{upperToLowerUnderscore($field).'_id'});
+                        unset($this->{upperToLowerUnderscore($field) . '_id'});
                     }
                 } else {
                     $propertyFormatted = upperToLowerUnderscore($property);
-                    if($this->{$propertyFormatted.'_id'} != '') {
-                        $this->$property = $property::get($this->{$propertyFormatted.'_id'});
+                    if ($this->{$propertyFormatted . '_id'} != '') {
+                        $this->$property = $property::get($this->{$propertyFormatted . '_id'});
                     }
-                    unset($this->{$propertyFormatted.'_id'});
+                    unset($this->{$propertyFormatted . '_id'});
                 }
             }
         }
     }
 
-    private function _options($options=null) {
-        if(empty($options)) return '';
+    private function _options($options = null) {
+        if (empty($options)) return '';
         $option = ' ';
         if (!empty($options['sort'])) {
             $option .= "order by " . upperToLowerUnderscore($options['sort']);
@@ -330,22 +334,22 @@ class domain {
         return $option;
     }
 
-    private function _optionsOnResults($results,$options=null) {
-        if(empty($options)) return $results;
+    private function _optionsOnResults($results, $options = null) {
+        if (empty($options)) return $results;
 
-        if(!empty($options['sort'])) {
-            $fx = function ($key,$reverse=false) {
-                return function ($a, $b) use ($key,$reverse) {
-                    return strnatcmp($a->$key, $b->$key) * ($reverse?-1:1);
+        if (!empty($options['sort'])) {
+            $fx = function ($key, $reverse = false) {
+                return function ($a, $b) use ($key, $reverse) {
+                    return strnatcmp($a->$key, $b->$key) * ($reverse ? -1 : 1);
                 };
             };
-            if(!empty($options['order']) && $options['order']=='desc') {
-                usort($results, $fx($options['sort'],true));
+            if (!empty($options['order']) && $options['order'] == 'desc') {
+                usort($results, $fx($options['sort'], true));
             } else {
                 usort($results, $fx($options['sort']));
             }
         }
-        if(!empty($options['offset'])) {
+        if (!empty($options['offset'])) {
             $offset = $options['offset'];
             $max = !empty($options['max']) ? $options['max'] : null;
             $results = array_slice($results, $offset, $max);
@@ -358,7 +362,7 @@ class domain {
         return $this->_findBy("id='$id'");
     }
 
-    private function _countBy($criteria='') {
+    private function _countBy($criteria = '') {
         $tableName = $this->_getName(true);
         $db = $this->_getDataSource();
         $query = "select count(*) as total from $tableName";
@@ -368,7 +372,7 @@ class domain {
         return $row ? $row->total : 0;
     }
 
-    private function _findBy($criteria='',$option='') {
+    private function _findBy($criteria = '', $option = '') {
         $tableName = $this->_getName(true);
         $db = $this->_getDataSource();
         $query = "select * from $tableName";
@@ -378,7 +382,7 @@ class domain {
             $query .= ' ' . $option;
         $query .= " limit 0,1";
         $row = $db->first($query);
-        if(!$row) {
+        if (!$row) {
             return false;
         }
         $controllerName = $this->_getName();
@@ -387,7 +391,7 @@ class domain {
         return $obj;
     }
 
-    private function _findAllBy($criteria='',$option='') {
+    private function _findAllBy($criteria = '', $option = '') {
         $tableName = $this->_getName(true);
         $db = $this->_getDataSource();
         $query = "select * from $tableName";
@@ -408,7 +412,7 @@ class domain {
         return $results;
     }
 
-    private function _findAll($option='') {
+    private function _findAll($option = '') {
         $db = $this->_getDataSource();
         $query = 'select * from ' . $this->_getName(true);
         $query .= $option;
@@ -425,25 +429,31 @@ class domain {
         return $results;
     }
 
-    private function _findMany($targetObj,$options=array()) {
+    private function _count($options = '') {
+        $db = $this->_getDataSource();
+        $query = 'select count(*) as total from ' . $this->_getName(true);
+        $row = $db->first($query);
+        if (!$row) {
+            return 0;
+        }
+        return $row->total;
+    }
+
+    private function _findMany($targetObj, $options = array()) {
         $assoTableName = $this->_getAssociateTable($targetObj);
         $db = $this->_getDataSource();
-        $colName = $this->_getName().'_id';
-        $query = 'select '.$this->_getName().'_id from ' . $assoTableName . ' where '.get_class($targetObj).'_id = ' . $targetObj->id;
+        $query = 'select ' . $this->_getName() . '_id from ' . $assoTableName . ' where ' . get_class($targetObj) . '_id = ' . $targetObj->id;
         $rows = $db->results($query);
         $results = array();
         if (count($rows)) {
-            foreach ($rows as $row) {
-                $controllerName = $this->_getName();
-                $obj = $controllerName::get($row->$colName);
-                $obj->_loadChildNodes();
-                $results[] = $obj;
-            }
+            $builderIds = collect($rows,'builder_id');
+            $objName = $this->_getName();
+            $results = $objName::findAllByIdInList($builderIds,$options);
         }
-        return $this->_optionsOnResults($results, $options);
+        return $results;
     }
 
-    private function _where($criteria, $option='') {
+    private function _where($criteria, $option = '') {
         $db = $this->_getDataSource();
         $query = 'select * from ' . $this->_getName(true) . ' where ' . $criteria;
         $query .= $option;
@@ -460,12 +470,12 @@ class domain {
         return $results;
     }
 
-    private function _getName($tableName=false) {
+    private function _getName($tableName = false) {
         $name = get_class($this);
-        if($tableName) {
+        if ($tableName) {
             $ref = new ReflectionClass($name);
             $const = $ref->getConstant('TABLE_NAME');
-            if(!empty($const)) {
+            if (!empty($const)) {
                 $name = $const;
             }
             return upperToLowerUnderscore($name);
@@ -478,19 +488,19 @@ class domain {
         $name = get_class($this);
         $ref = new ReflectionClass($name);
         $label = $ref->getConstant('DATA_SOURCE');
-        if(empty($label)) {
+        if (empty($label)) {
             $label = 'dataSource';
         }
-        return config::getHandler('dataSource',$label);
+        return config::getHandler('dataSource', $label);
     }
 
     private function _getAssociateTable($targetObj) {
         $targetObjName = get_class($targetObj);
         $assoTableName = null;
-        if(property_exists($this, 'manyToMany')) {
-            foreach($this->manyToMany as $mtm) {
-                if(in_array($this->_getName(),$mtm) && in_array($targetObjName,$mtm)) {
-                    $assoTableName = implode('_',$mtm) . '_link';
+        if (property_exists($this, 'manyToMany')) {
+            foreach ($this->manyToMany as $mtm) {
+                if (in_array($this->_getName(), $mtm) && in_array($targetObjName, $mtm)) {
+                    $assoTableName = implode('_', $mtm) . '_link';
 //                    $targetObjName = $mtm[0] == $this->_getName() ? $mtm[1] : $mtm[0];
                     break;
                 }
@@ -502,14 +512,22 @@ class domain {
     public function linkAssociate($targetObj) {
         $db = $this->_getDataSource();
         $assoTableName = $this->_getAssociateTable($targetObj);
-        $query = 'replace into ' . $assoTableName . ' ('.get_class($targetObj).'_id,'.$this->_getName().'_id) values (' . $targetObj->id . ',' . $this->id.')';
+        $query = 'replace into ' . $assoTableName . ' (' . get_class($targetObj) . '_id,' . $this->_getName() . '_id) values (' . $targetObj->id . ',' . $this->id . ')';
         return $db->first($query);
     }
 
     public function unlinkAssociate($targetObj) {
         $db = $this->_getDataSource();
         $assoTableName = $this->_getAssociateTable($targetObj);
-        $query = 'delete from ' . $assoTableName . ' where '.get_class($targetObj).'_id = ' . $targetObj->id . ' and '.$this->_getName().'_id = ' . $this->id;
+        $query = 'delete from ' . $assoTableName . ' where ' . get_class($targetObj) . '_id = ' . $targetObj->id . ' and ' . $this->_getName() . '_id = ' . $this->id;
         return $db->first($query);
+    }
+
+    public function copy($params = array()) {
+        foreach($params as $key => $value) {
+            if(property_exists($this->_getName(),$key) && !in_array($key,array('id','password','dateCreated','dateUpdated'))) {
+                $this->$key = $value;
+            }
+        }
     }
 }

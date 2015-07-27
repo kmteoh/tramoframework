@@ -64,7 +64,6 @@ class pTaglib {
 
     public function debug() {
         $body = '';
-        $runtimeConfig = config::getInstance();
 
         $db = config::getHandler('dataSource');
         if ($error = $db->info('error')) {

@@ -244,7 +244,7 @@ function upperToLowerUnderscore($string) {
         $resultStr = substr($resultStr,1);
     }
         
-    return strtolower($resultStr);
+    return str_replace('__','_',strtolower($resultStr));
 }
 
 function lowerUnderscoreToUpper($string) {
@@ -410,6 +410,14 @@ function collect($objects,$expression) {
     return $results;
 }
 
+function reKey($array,$key,$value=null) {
+    $newArray = array();
+    foreach($array as $a) {
+        $newArray[$a[$key]] = $value ? $a[$value] : $a;
+    }
+    return $newArray;
+}
+
 function arrayToTable($data,$singleDim=false)
 {
     if(empty($data)) return;
@@ -434,19 +442,13 @@ function arrayToTable($data,$singleDim=false)
 }
 
 function guid(){
-    if (function_exists('com_create_guid')){
-        return com_create_guid();
-    }else{
-        mt_srand((double)microtime()*10000);//optional for php 4.2.0 and up.
-        $charid = strtoupper(md5(uniqid(rand(), true)));
-        $hyphen = chr(45);// "-"
-        $uuid = chr(123)// "{"
-            .substr($charid, 0, 8).$hyphen
-            .substr($charid, 8, 4).$hyphen
-            .substr($charid,12, 4).$hyphen
-            .substr($charid,16, 4).$hyphen
-            .substr($charid,20,12)
-            .chr(125);// "}"
-        return $uuid;
-    }
+    mt_srand((double)microtime()*10000);//optional for php 4.2.0 and up.
+    $charid = strtoupper(md5(uniqid(rand(), true)));
+    $hyphen = chr(45);// "-"
+    $uuid = substr($charid, 0, 8).$hyphen
+        .substr($charid, 8, 4).$hyphen
+        .substr($charid,12, 4).$hyphen
+        .substr($charid,16, 4).$hyphen
+        .substr($charid,20,12);
+    return $uuid;
 }

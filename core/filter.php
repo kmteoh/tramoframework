@@ -12,11 +12,16 @@ abstract class filter {
 
     abstract public function before($controller, $action);
 
+    /**
+     * @return $model
+     */
     abstract public function after($controller, $action, $model);
 
-    abstract public function beforeView($controller, $action, $model, $html);
-
     abstract public function afterView($controller, $action, $model, $html);
+
+    public function beforeView($controller, $action, $model, $html){
+        return $html;
+    }
 
     public static final function getFilters() {
         $filters = array();

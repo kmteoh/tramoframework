@@ -29,6 +29,12 @@ class session {
         return $self->$name;
     }
 
+    public static function set($name,$value) {
+        $self = session::getInstance();
+        $self->$name = $value;
+        return $self;
+    }
+
     /**
      * not required at this time
      */

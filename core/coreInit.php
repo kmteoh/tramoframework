@@ -47,9 +47,7 @@ if (is_array($runtimeConfig->db)) {
         }
         if ($dsn) {
             $db = config::getHandler('dataSource', $label, $dsn, $dataSource['dbUser'], $dataSource['dbPassword']);
-            if (!empty($dataSource['profiling'])) {
-                $dataSource['profiling'] ? $db->enableProfiling() : $db->disableProfiling();
-            }
+            $dataSource['profiling'] || $runtimeConfig->db['profiling'] ? $db->enableProfiling() : $db->disableProfiling();
             $cache && $cache->canCache('query') ? $db->enableCaching() : $db->disableCaching();
         }
     }

@@ -86,7 +86,7 @@ try {
 
     //run 'after' filters
     for($i=0;$i<count($filters);$i++) {
-        $filters[$i]->after($controller,$action,$model);
+        $model = $filters[$i]->after($controller,$action,$model);
     }
 
     //if format is specified, convery the output to given format, potentially json/xml/csv
