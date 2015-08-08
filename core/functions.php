@@ -452,3 +452,7 @@ function guid(){
         .substr($charid,20,12);
     return $uuid;
 }
+
+function now() {
+    return date('Y-m-d H:i:s');
+}

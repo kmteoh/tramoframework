@@ -8,4 +8,6 @@
  * @license http://opensource.org/licenses/MIT
  */
 
-class UrlMappingErrorException extends Exception {}
+class UrlMappingErrorException extends HttpException {
+    protected $statusCode = 404;
+}

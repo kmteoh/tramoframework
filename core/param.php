@@ -36,6 +36,10 @@ class param {
         return $self->$name;
     }
 
+    public function toArray() {
+        return $this->_params;
+    }
+
     private function _init() {
         if(count($_REQUEST)) {
             foreach($_REQUEST as $key => $value) {
@@ -46,7 +50,7 @@ class param {
         unset($get['page']);
         unset($get['_q']);
 		foreach($get as $key => $value){
-			$cleanGet[$key] = urlencode($value);
+			$cleanGet[$key] = trim(urlencode($value));
 		}
         $this->_params['endpoint'] = $this->_params['_q'];
         $this->_params['requestMethod'] = $_SERVER['REQUEST_METHOD'];
@@ -62,6 +66,12 @@ class param {
         $this->_params['cookie'] = $_COOKIE;
         $this->_params['clientIp'] = getenv('HTTP_TRUE_CLIENT_IP')?:getenv('HTTP_CLIENT_IP')?:getenv('HTTP_X_FORWARDED_FOR')?:getenv('HTTP_X_FORWARDED')?:getenv('HTTP_FORWARDED_FOR')?:getenv('HTTP_FORWARDED')?:getenv('REMOTE_ADDR');
         $this->_params['raw'] = file_get_contents("php://input");
+        $this->_params['referrer'] = $_SERVER['HTTP_REFERER'];
+
+        if(isset($_SESSION['formToken'])) {
+            $this->_params['formSecured'] = $this->_params['_token'] == $_SESSION['formToken'];
+            session::clear('formToken');
+        }
     }
 
 }

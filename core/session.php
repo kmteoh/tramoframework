@@ -24,6 +24,11 @@ class session {
         $_SESSION[$name] = $value;
     }
 
+    public static function __callStatic($name,$args=null) {
+        $self = session::getInstance();
+        call_user_func_array(array($self, $name),$args);
+    }
+
     public static function get($name) {
         $self = session::getInstance();
         return $self->$name;
@@ -35,10 +40,19 @@ class session {
         return $self;
     }
 
+    public static function clear($name) {
+        unset($_SESSION[$name]);
+        return session::getInstance();
+    }
+
+    public static function kill() {
+        session_destroy();
+        session_regenerate_id(true);
+    }
+
     /**
      * not required at this time
      */
     private function _init() {
-
     }
 }

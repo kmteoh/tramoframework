@@ -65,12 +65,14 @@ class pTaglib {
     public function debug() {
         $body = '';
 
-        $db = config::getHandler('dataSource');
-        if ($error = $db->info('error')) {
-            $body .= predump($error, false);
-        }
-        if ($profile = $db->info('profile')) {
-            $body .= $this->dataTable(array('data'=>$profile));
+        if(config::isDevEnv()) {
+            $db = config::getHandler('dataSource');
+            if ($error = $db->info('error')) {
+                $body .= predump($error, false);
+            }
+            if ($profile = $db->info('profile')) {
+                $body .= $this->dataTable(array('data' => $profile));
+            }
         }
         return $body;
     }
@@ -111,13 +113,15 @@ class pTaglib {
 		$output .= '<select name="' . $attrs['name'] . '"';
         $output .= ' id="' . (!empty($attrs['id']) ? $attrs['id'] : $attrs['name']) . '"';
         foreach ($attrs as $key => $value) {
-            if (!in_array($key, array('name', 'options', 'value', 'defaultValue'))) {
+            if ($key == 'required') {
+                $output .= " required";
+            } else if (!in_array($key, array('name', 'options', 'value', 'default'))) {
                 $output .= " $key=\"$value\"";
             }
         }
         $output .= '>';
         if (!empty($attrs['default'])) {
-            $output .= '<option value="">' . $attrs['default'] . '</option>';
+            $output .= '<option value="" selected="" disabled="">' . $attrs['default'] . '</option>';
         }
         if (!empty($attrs['options'])) {
             if(!empty($attrs['labelValue'])) { 
@@ -242,5 +246,11 @@ class pTaglib {
         $output .= '</tbody></table>';
 
         return $output;
+    }
+
+    public function secureForm($attrs=array(),$body=null) {
+        $t = guid();
+        session::set('formToken',$t);
+        return '<input type="hidden" name="_token" value="'.$t.'"/>';
     }
 }

@@ -18,12 +18,12 @@ class mailService extends service {
     }
 
     private function _sendMail($to,$subject,$body,$from,$contentType,$cc,$bcc,$highPriority) {
-        $runtimeConfing = config::getInstance();
+        $runtimeConfig = config::getInstance();
         $headers = array();
         $headers[] = "MIME-Version: 1.0";
         $headers[] = "Content-type: text/$contentType; charset=iso-8859-1";
         if (!$from) {
-            $from = $runtimeConfing->mail['from'];
+            $from = $runtimeConfig->mail['from'];
         }
         $headers[] = "From: $from";
         if ($cc)
@@ -35,8 +35,8 @@ class mailService extends service {
 
         $header = implode("\r\n", $headers) . "\r\n";
 
-        if ($runtimeConfing->environment != "production")
-            $subject = '[' . $runtimeConfing->environment . '] ' . $subject;
+        if ($runtimeConfig->environment != "production")
+            $subject = '[' . $runtimeConfig->environment . '] ' . $subject;
 
         return mail($to, $subject, $body, $header);
     }
